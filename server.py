@@ -9,11 +9,15 @@ import os
 import time
 import threading
 import webbrowser
+import datetime as dt
 
 try:
     import cStringIO as io
 except ImportError:
     import io
+
+import os, sys, time, subprocess
+overlayString = ""
 
 import tornado.web
 import tornado.websocket
@@ -56,6 +60,10 @@ class ErrorHandler(tornado.web.RequestHandler):
 
 
 class WebSocket(tornado.websocket.WebSocketHandler):
+    
+    def cpu_temp():
+        temp = os.popen("vcgencmd measure_temp").readline()
+        return (temp.replace("temp=",""))
 
     def on_message(self, message):
         """Evaluates the function pointed to by json-rpc."""
@@ -75,13 +83,47 @@ class WebSocket(tornado.websocket.WebSocketHandler):
     def loop(self):
         """Sends camera images in an infinite loop."""
         sio = io.StringIO()
+	overlayString = ""
+
+	tfile = open("/sys/bus/w1/devices/w1_bus_master1/28-0417837f42ff/w1_slave")
+	text1 = tfile.read()
+	tfile.close()
+	tempdata1 = text1.split()[-1]
+	temp1 = float(tempdata1[2:])
+	temp1 = temp1 / 1000
+	temp1 = '%6.2f'%temp1
+
+	tfile2 = open("/sys/bus/w1/devices/w1_bus_master1/28-0517908cbdff/w1_slave")
+	text2 = tfile2.read()
+	tfile2.close()
+	tempdata2 = text2.split()[-1]
+	temp2 = float(tempdata2[2:])
+	temp2 = temp2 / 1000
+	temp2 = '%6.2f'%temp2
+
+	tfile3 = open("/sys/bus/w1/devices/w1_bus_master1/28-051790b51aff/w1_slave")
+	text3 = tfile3.read()
+	tfile3.close()
+	tempdata3 = text3.split()[-1]
+	temp3 = float(tempdata3[2:])
+	temp3 = temp3 / 1000
+	temp3 = '%6.2f'%temp3
+
+	overlayString += 'BED1'+str(temp1)+'C'
+	overlayString += 'ROOM'+str(temp2)+'C'
+	overlayString += 'BED2'+str(temp3)+'C'
+	overlayString += 'CPU'+str(cpu_temp())
 
         if args.use_usb:
             _, frame = camera.read()
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             img.save(sio, "JPEG")
         else:
-            camera.capture(sio, "jpeg", use_video_port=True)
+            camera.annotate_text_size = 30
+            #camera.annotate_text = "I am what I am" 
+            #camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            camera.annotate_text = overlayString
+	    camera.capture(sio, "jpeg", use_video_port=True)
 
         try:
             self.write_message(base64.b64encode(sio.getvalue()))
