@@ -108,10 +108,10 @@ class WebSocket(tornado.websocket.WebSocketHandler):
 	temp3 = temp3 / 1000
 	temp3 = '%6.2f'%temp3
 
-	overlayString += 'BED1'+str(temp1)+'C'
-	overlayString += 'ROOM'+str(temp2)+'C'
-	overlayString += 'BED2'+str(temp3)+'C'
-	overlayString += 'CPU'+str(cpu_temp())
+	overlayString += '                 BED1: '+str(temp1)+'C\n'
+        overlayString += '                 ROOM: '+str(temp2)+'C\n'
+        overlayString += '                 BED2: '+str(temp3)+'C\n'
+        overlayString += '                 CPU'+str(cpu_temp())
 
         if args.use_usb:
             _, frame = camera.read()
