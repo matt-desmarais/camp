@@ -118,7 +118,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             img.save(sio, "JPEG")
         else:
-            camera.annotate_text_size = 30
+            camera.annotate_text_size = 20
             #camera.annotate_text = "I am what I am" 
             #camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             camera.annotate_text = overlayString
