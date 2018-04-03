@@ -61,10 +61,6 @@ class ErrorHandler(tornado.web.RequestHandler):
 
 class WebSocket(tornado.websocket.WebSocketHandler):
     
-    def cpu_temp():
-        temp = os.popen("vcgencmd measure_temp").readline()
-        return (temp.replace("temp=",""))
-
     def on_message(self, message):
         """Evaluates the function pointed to by json-rpc."""
 
@@ -81,7 +77,10 @@ class WebSocket(tornado.websocket.WebSocketHandler):
             print("Unsupported function: " + message)
 
     def loop(self):
-        """Sends camera images in an infinite loop."""
+        def cpu_temp():
+            temp = os.popen("vcgencmd measure_temp").readline()
+            return (temp.replace("temp=",""))
+	"""Sends camera images in an infinite loop."""
         sio = io.StringIO()
 	overlayString = ""
 
